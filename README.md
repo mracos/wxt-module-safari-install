@@ -42,8 +42,9 @@ wxt build -b safari
 | `team`    | `string`            | –        | Apple team ID for `auto` signing.                                   |
 | `sign`    | `'auto' \| 'adhoc'` | `'auto'` | `auto`: `-allowProvisioningUpdates` + team. `adhoc`: local signing. |
 | `install` | `boolean`           | `true`   | Copy to `/Applications` and launch.                                 |
+| `dmg`     | `boolean`           | `false`  | Also package the app into `.output/<name>.dmg`.                     |
 
-Env overrides: `WXT_SAFARI_SIGN=adhoc`, `WXT_SAFARI_NO_INSTALL=1`.
+Env overrides: `WXT_SAFARI_SIGN=adhoc`, `WXT_SAFARI_NO_INSTALL=1`, `WXT_SAFARI_DMG=1`.
 
 ## How it works
 

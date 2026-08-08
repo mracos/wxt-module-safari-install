@@ -1,7 +1,8 @@
 import { defineWxtModule } from 'wxt/modules';
 import { execFileSync } from 'node:child_process';
-import { readdirSync, rmSync, cpSync } from 'node:fs';
+import { readdirSync, rmSync, cpSync, mkdtempSync, symlinkSync } from 'node:fs';
 import { join, dirname, basename, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 
 const LSREGISTER =
   '/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister';
@@ -52,6 +53,7 @@ export default defineWxtModule({
     const opts = options ?? {};
     const sign = process.env.WXT_SAFARI_SIGN ?? opts.sign ?? 'auto';
     const install = process.env.WXT_SAFARI_NO_INSTALL ? false : (opts.install ?? true);
+    const dmg = process.env.WXT_SAFARI_DMG ? true : (opts.dmg ?? false);
     const team = opts.team;
 
     wxt.hook('build:done', async (wxt2) => {
@@ -106,6 +108,18 @@ export default defineWxtModule({
         return;
       }
       log.success(`safari-install: built ${app}`);
+
+      if (dmg) {
+        const out = join(wxt2.config.root, '.output', `${appName}.dmg`);
+        const stage = mkdtempSync(join(tmpdir(), 'milheiro-dmg-'));
+        cpSync(app, join(stage, `${appName}.app`), { recursive: true });
+        symlinkSync('/Applications', join(stage, 'Applications')); // drag-to-install
+        rmSync(out, { force: true });
+        // prettier-ignore
+        execFileSync('hdiutil', ['create', '-volname', appName, '-srcfolder', stage, '-ov', '-format', 'UDZO', out], { stdio: 'inherit' });
+        rmSync(stage, { recursive: true, force: true });
+        log.success(`safari-install: packaged ${out}`);
+      }
 
       if (!install) return;
       const dest = `/Applications/${appName}.app`;

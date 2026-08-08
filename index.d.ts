@@ -17,6 +17,12 @@ export interface SafariInstallOptions {
    * @default true
    */
   install?: boolean;
+  /**
+   * Also package the built app into `.output/<name>.dmg` (unsigned unless the
+   * app is signed). Enable with `WXT_SAFARI_DMG=1`.
+   * @default false
+   */
+  dmg?: boolean;
 }
 
 declare const _default: WxtModule<SafariInstallOptions>;
