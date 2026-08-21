@@ -1,7 +1,8 @@
 # wxt-module-safari-install
 
-A WXT module that **builds, signs, and installs** the generated Safari extension
-app locally, on `wxt build -b safari`. It's the automated `⌘R`: pairs with
+A WXT module that **builds, signs, and optionally installs** the generated
+Safari extension app locally, on `wxt build -b safari`. It's the automated
+`⌘R`: pairs with
 [`wxt-module-safari-xcode`](https://www.npmjs.com/package/wxt-module-safari-xcode)
 (which only generates + configures the Xcode project) so a single command takes
 you from source to an extension enabled in Safari.
@@ -32,7 +33,8 @@ export default defineConfig({
 ```
 
 ```sh
-wxt build -b safari
+wxt build -b safari                     # build + sign
+WXT_SAFARI_INSTALL=1 wxt build -b safari  # ...and install into /Applications
 ```
 
 ## Options
@@ -41,15 +43,15 @@ wxt build -b safari
 | --------- | ------------------- | -------- | ------------------------------------------------------------------- |
 | `team`    | `string`            | –        | Apple team ID for `auto` signing.                                   |
 | `sign`    | `'auto' \| 'adhoc'` | `'auto'` | `auto`: `-allowProvisioningUpdates` + team. `adhoc`: local signing. |
-| `install` | `boolean`           | `true`   | Copy to `/Applications` and launch.                                 |
+| `install` | `boolean`           | `false`  | Copy to `/Applications` and launch.                                 |
 | `dmg`     | `boolean`           | `false`  | Also package the app into `.output/<name>.dmg`.                     |
 
-Env overrides: `WXT_SAFARI_SIGN=adhoc`, `WXT_SAFARI_NO_INSTALL=1`, `WXT_SAFARI_DMG=1`.
+Env overrides: `WXT_SAFARI_SIGN=adhoc`, `WXT_SAFARI_INSTALL=1`, `WXT_SAFARI_DMG=1`.
 
 ## How it works
 
 On `build:done` (Safari only) it finds the `.xcodeproj` under `.output/`,
-detects the scheme, runs `xcodebuild` (Release) with the chosen signing, copies
-the `.app` to `/Applications`, unregisters the transient DerivedData copy from
+detects the scheme, runs `xcodebuild` (Release) with the chosen signing, and,
+when `install` is on, copies the `.app` to `/Applications`, unregisters the transient DerivedData copy from
 LaunchServices (so Safari doesn't list the extension twice), and opens the app.
 Then enable it in Safari → Settings → Extensions.

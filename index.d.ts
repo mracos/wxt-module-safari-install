@@ -12,9 +12,9 @@ export interface SafariInstallOptions {
    */
   sign?: 'auto' | 'adhoc';
   /**
-   * Copy the built app to /Applications and launch it. Set `WXT_SAFARI_NO_INSTALL=1`
-   * to build + sign only.
-   * @default true
+   * Copy the built app to /Applications and launch it. Off by default (a build
+   * shouldn't touch /Applications); enable with `WXT_SAFARI_INSTALL=1`.
+   * @default false
    */
   install?: boolean;
   /**

@@ -52,7 +52,7 @@ export default defineWxtModule({
 
     const opts = options ?? {};
     const sign = process.env.WXT_SAFARI_SIGN ?? opts.sign ?? 'auto';
-    const install = process.env.WXT_SAFARI_NO_INSTALL ? false : (opts.install ?? true);
+    const install = process.env.WXT_SAFARI_INSTALL ? true : (opts.install ?? false);
     const dmg = process.env.WXT_SAFARI_DMG ? true : (opts.dmg ?? false);
     const team = opts.team;
 
