@@ -1,6 +1,7 @@
 # wxt-module-safari-install
 
 [![npm](https://img.shields.io/npm/v/wxt-module-safari-install)](https://www.npmjs.com/package/wxt-module-safari-install)
+[![downloads](https://img.shields.io/npm/dt/wxt-module-safari-install)](https://www.npmjs.com/package/wxt-module-safari-install)
 [![ci](https://github.com/mracos/wxt-module-safari-install/actions/workflows/ci.yml/badge.svg)](https://github.com/mracos/wxt-module-safari-install/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/wxt-module-safari-install)](./LICENSE)
 
