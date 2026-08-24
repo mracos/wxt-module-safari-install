@@ -49,4 +49,4 @@ jobs:
       # No NPM_TOKEN: npm exchanges the workflow's OIDC identity for a short-lived
       # credential. Configure the trusted publisher once at
       # npmjs.com/package/wxt-module-safari-install/access.
-      - run: npm publish
+      - run: npm publish --provenance
