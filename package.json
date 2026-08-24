@@ -1,6 +1,6 @@
 {
   "name": "wxt-module-safari-install",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "WXT module that builds, signs, and installs the generated Safari extension app locally (macOS). Pairs with wxt-module-safari-xcode.",
   "type": "module",
   "exports": {
