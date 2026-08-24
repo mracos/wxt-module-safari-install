@@ -106,6 +106,19 @@ test('resolveOptions takes env over config', () => {
   assert.equal(resolved.deploymentTarget, '11.0');
 });
 
+test('resolveOptions treats 0 and false as an explicit off-switch', () => {
+  const off = resolveOptions(
+    { install: true, dmg: true },
+    {
+      WXT_SAFARI_INSTALL: '0',
+      WXT_SAFARI_DMG: 'false',
+    },
+  );
+
+  assert.equal(off.install, false);
+  assert.equal(off.dmg, false);
+});
+
 test('resolveOptions ignores an empty env var and defers to config', () => {
   const resolved = resolveOptions({ install: true }, { WXT_SAFARI_INSTALL: '' });
 

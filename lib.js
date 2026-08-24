@@ -55,6 +55,19 @@ export function findApp(dir, name) {
 }
 
 /**
+ * Flag-style env vars: set means on, unset means "defer to config". Without the
+ * explicit off-switches `WXT_SAFARI_INSTALL=0` would read as truthy (every env
+ * var is a string) and install anyway.
+ *
+ * @param {string | undefined} value
+ * @returns {boolean | undefined}
+ */
+function envFlag(value) {
+  if (value === undefined || value === '') return undefined;
+  return value !== '0' && value.toLowerCase() !== 'false';
+}
+
+/**
  * Env overrides config, config overrides the default.
  *
  * @param {import('./index.d.ts').SafariInstallOptions} [options]
@@ -64,8 +77,8 @@ export function resolveOptions(options = {}, env = process.env) {
   return {
     team: options.team,
     sign: env.WXT_SAFARI_SIGN ?? options.sign ?? 'auto',
-    install: env.WXT_SAFARI_INSTALL ? true : (options.install ?? false),
-    dmg: env.WXT_SAFARI_DMG ? true : (options.dmg ?? false),
+    install: envFlag(env.WXT_SAFARI_INSTALL) ?? options.install ?? false,
+    dmg: envFlag(env.WXT_SAFARI_DMG) ?? options.dmg ?? false,
     deploymentTarget:
       env.WXT_SAFARI_DEPLOYMENT_TARGET ?? options.deploymentTarget ?? DEFAULT_DEPLOYMENT_TARGET,
   };
