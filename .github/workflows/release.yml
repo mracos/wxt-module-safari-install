@@ -1,0 +1,52 @@
+name: release
+
+# release-please reads the conventional commits landed on main and keeps a draft
+# "chore(main): release x.y.z" PR open with the version bump + CHANGELOG. Marking
+# it ready and merging cuts the tag and GitHub release, which publishes to npm.
+# Both jobs live here because a tag pushed with GITHUB_TOKEN can't trigger a
+# second workflow (GitHub's recursion guard).
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC: npm trusted publishing + provenance attestation
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      # Trusted publishing needs npm >= 11.5.1, newer than what some runners bundle.
+      - run: npm install -g npm@latest
+      - run: npm ci
+      - run: npm run check
+      # No NPM_TOKEN: npm exchanges the workflow's OIDC identity for a short-lived
+      # credential. Configure the trusted publisher once at
+      # npmjs.com/package/wxt-module-safari-install/access.
+      - run: npm publish
