@@ -1,42 +1,9 @@
 import { defineWxtModule } from 'wxt/modules';
 import { execFileSync } from 'node:child_process';
-import { readdirSync, rmSync, cpSync, mkdtempSync, symlinkSync } from 'node:fs';
+import { rmSync, cpSync, mkdtempSync, symlinkSync } from 'node:fs';
 import { join, dirname, basename, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
-
-const LSREGISTER =
-  '/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister';
-
-// Find the single *.xcodeproj under root, skipping build-output dirs.
-function findXcodeproj(root) {
-  const stack = [root];
-  while (stack.length) {
-    const dir = stack.pop();
-    let entries;
-    try {
-      entries = readdirSync(dir, { withFileTypes: true });
-    } catch {
-      continue;
-    }
-    for (const e of entries) {
-      if (!e.isDirectory()) continue;
-      if (e.name.endsWith('.xcodeproj')) return join(dir, e.name);
-      if (e.name !== 'DerivedData' && e.name !== 'build') stack.push(join(dir, e.name));
-    }
-  }
-  return null;
-}
-
-function findApp(dir, name) {
-  try {
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      if (e.isDirectory() && e.name === `${name}.app`) return join(dir, e.name);
-    }
-  } catch {
-    /* no such dir */
-  }
-  return null;
-}
+import { LSREGISTER, findApp, findXcodeproj, resolveOptions, xcodebuildArgs } from './lib.js';
 
 /**
  * Runs on `build:done` for the Safari target only. Must be listed AFTER
@@ -50,13 +17,7 @@ export default defineWxtModule({
   setup(wxt, options) {
     if (wxt.config.browser !== 'safari') return;
 
-    const opts = options ?? {};
-    const sign = process.env.WXT_SAFARI_SIGN ?? opts.sign ?? 'auto';
-    const install = process.env.WXT_SAFARI_INSTALL ? true : (opts.install ?? false);
-    const dmg = process.env.WXT_SAFARI_DMG ? true : (opts.dmg ?? false);
-    const team = opts.team;
-    const deploymentTarget =
-      process.env.WXT_SAFARI_DEPLOYMENT_TARGET ?? opts.deploymentTarget ?? '11.0';
+    const { sign, install, dmg, team, deploymentTarget } = resolveOptions(options);
 
     wxt.hook('build:done', async (wxt2) => {
       const log = wxt2.logger;
@@ -80,33 +41,13 @@ export default defineWxtModule({
       ).project.schemes[0];
 
       log.info(`safari-install: building + signing (${sign}, scheme ${scheme})`);
-      const args = [
-        '-project',
-        xcproj,
-        '-scheme',
-        scheme,
-        '-configuration',
-        'Release',
-        '-derivedDataPath',
-        derived,
-        // The converter-generated project has no explicit target, so it inherits the
-        // build machine's SDK. On a macos-latest runner that stamps the current macOS
-        // into LSMinimumSystemVersion and locks the app to the newest release.
-        `MACOSX_DEPLOYMENT_TARGET=${deploymentTarget}`,
-      ];
-      if (sign === 'adhoc') {
-        args.push(
-          'CODE_SIGN_STYLE=Manual',
-          'CODE_SIGN_IDENTITY=-',
-          'DEVELOPMENT_TEAM=',
-          'PROVISIONING_PROFILE_SPECIFIER=',
-        );
-      } else {
-        args.push('-allowProvisioningUpdates', 'CODE_SIGN_STYLE=Automatic');
-        if (team) args.push(`DEVELOPMENT_TEAM=${team}`);
-      }
-      args.push('build');
-      execFileSync('xcodebuild', args, { stdio: 'inherit' });
+      execFileSync(
+        'xcodebuild',
+        xcodebuildArgs({ xcproj, scheme, derived, sign, team, deploymentTarget }),
+        {
+          stdio: 'inherit',
+        },
+      );
 
       const app = findApp(join(derived, 'Build/Products/Release'), appName);
       if (!app) {
@@ -117,7 +58,7 @@ export default defineWxtModule({
 
       if (dmg) {
         const out = join(wxt2.config.root, '.output', `${appName}.dmg`);
-        const stage = mkdtempSync(join(tmpdir(), 'milheiro-dmg-'));
+        const stage = mkdtempSync(join(tmpdir(), 'wxt-safari-dmg-'));
         cpSync(app, join(stage, `${appName}.app`), { recursive: true });
         symlinkSync('/Applications', join(stage, 'Applications')); // drag-to-install
         rmSync(out, { force: true });
