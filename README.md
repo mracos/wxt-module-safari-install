@@ -39,14 +39,16 @@ WXT_SAFARI_INSTALL=1 wxt build -b safari  # ...and install into /Applications
 
 ## Options
 
-| Option    | Type                | Default  | Notes                                                               |
-| --------- | ------------------- | -------- | ------------------------------------------------------------------- |
-| `team`    | `string`            | –        | Apple team ID for `auto` signing.                                   |
-| `sign`    | `'auto' \| 'adhoc'` | `'auto'` | `auto`: `-allowProvisioningUpdates` + team. `adhoc`: local signing. |
-| `install` | `boolean`           | `false`  | Copy to `/Applications` and launch.                                 |
-| `dmg`     | `boolean`           | `false`  | Also package the app into `.output/<name>.dmg`.                     |
+| Option             | Type                | Default  | Notes                                                               |
+| ------------------ | ------------------- | -------- | ------------------------------------------------------------------- |
+| `team`             | `string`            | –        | Apple team ID for `auto` signing.                                   |
+| `sign`             | `'auto' \| 'adhoc'` | `'auto'` | `auto`: `-allowProvisioningUpdates` + team. `adhoc`: local signing. |
+| `install`          | `boolean`           | `false`  | Copy to `/Applications` and launch.                                 |
+| `dmg`              | `boolean`           | `false`  | Also package the app into `.output/<name>.dmg`.                     |
+| `deploymentTarget` | `string`            | `'11.0'` | Minimum macOS stamped into the app, instead of the build SDK's.     |
 
-Env overrides: `WXT_SAFARI_SIGN=adhoc`, `WXT_SAFARI_INSTALL=1`, `WXT_SAFARI_DMG=1`.
+Env overrides: `WXT_SAFARI_SIGN=adhoc`, `WXT_SAFARI_INSTALL=1`, `WXT_SAFARI_DMG=1`,
+`WXT_SAFARI_DEPLOYMENT_TARGET=11.0`.
 
 ## How it works
 

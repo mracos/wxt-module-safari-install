@@ -55,6 +55,8 @@ export default defineWxtModule({
     const install = process.env.WXT_SAFARI_INSTALL ? true : (opts.install ?? false);
     const dmg = process.env.WXT_SAFARI_DMG ? true : (opts.dmg ?? false);
     const team = opts.team;
+    const deploymentTarget =
+      process.env.WXT_SAFARI_DEPLOYMENT_TARGET ?? opts.deploymentTarget ?? '11.0';
 
     wxt.hook('build:done', async (wxt2) => {
       const log = wxt2.logger;
@@ -87,6 +89,10 @@ export default defineWxtModule({
         'Release',
         '-derivedDataPath',
         derived,
+        // The converter-generated project has no explicit target, so it inherits the
+        // build machine's SDK. On a macos-latest runner that stamps the current macOS
+        // into LSMinimumSystemVersion and locks the app to the newest release.
+        `MACOSX_DEPLOYMENT_TARGET=${deploymentTarget}`,
       ];
       if (sign === 'adhoc') {
         args.push(

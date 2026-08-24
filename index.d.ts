@@ -23,6 +23,14 @@ export interface SafariInstallOptions {
    * @default false
    */
   dmg?: boolean;
+  /**
+   * Minimum macOS version stamped into the app's `LSMinimumSystemVersion`.
+   * Without it the build inherits the machine's SDK, so a CI runner on the
+   * newest macOS produces an app that refuses to launch anywhere else.
+   * Overridable with `WXT_SAFARI_DEPLOYMENT_TARGET`.
+   * @default '11.0'
+   */
+  deploymentTarget?: string;
 }
 
 declare const _default: WxtModule<SafariInstallOptions>;
